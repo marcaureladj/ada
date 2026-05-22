@@ -44,12 +44,19 @@ Les fournisseurs externes (vision, text, TTS) sont des adapters pluggables dans 
 | Type | Provider | Statut | Override env |
 |---|---|---|---|
 | Vision | `claude-computer-use` | ✅ Computer Use officiel | `ADA_VISION_MODEL`, `ADA_COMPUTER_USE_BETA` |
-| Vision | `gpt-4-vision` / `gemini-vision` / `qwen2-vl-local` | 🔜 stubs |  |
+| Vision | `gpt-4-vision` | ✅ GPT-4o + screenshot+JSON+selector | `OPENAI_API_KEY` |
+| Vision | `gemini-vision` | ✅ Gemini 2.5 Pro direct (Google AI Studio API) | `GOOGLE_API_KEY` |
+| Vision | `vertex-vision` | ✅ Gemini via Vertex OpenAI-compatible | `ADA_VERTEX_API_KEY`, `ADA_VERTEX_API_URL` |
+| Vision | `qwen2-vl-local` / `fal-vision` / `replicate-vision` | 🔜 stubs |  |
 | Text | `claude` | ✅ Claude Sonnet | `ANTHROPIC_API_KEY` |
 | Text | `openai` | ✅ GPT-4o | `OPENAI_API_KEY`, `ADA_OPENAI_MODEL` |
+| Text | `vertex` / `fal` / `replicate` / `openai-compat` | ✅ via OpenAI-compatible base URL | `ADA_<NAME>_API_KEY`, `ADA_<NAME>_API_URL` |
 | Text | `gemini` / `ollama` | 🔜 stubs |  |
 | TTS | `elevenlabs` | ✅ eleven_multilingual_v2 | `ELEVENLABS_API_KEY` |
 | TTS | `openai-tts` | ✅ tts-1 | `OPENAI_API_KEY`, `ADA_OPENAI_TTS_MODEL` |
+| TTS | `fal-tts` | ✅ Fal hosted (Kokoro par défaut) | `ADA_FAL_API_KEY`, `ADA_FAL_TTS_MODEL` |
+| TTS | `vertex-tts` | ✅ Google Cloud Text-to-Speech | `ADA_VERTEX_API_KEY`, `ADA_VERTEX_TTS_MODEL` |
+| TTS | `replicate-tts` | ✅ Replicate predictions (xtts-v2 par défaut) | `ADA_REPLICATE_API_KEY`, `ADA_REPLICATE_TTS_MODEL` |
 | TTS | `kokoro` | 🔜 stub |  |
 
 ## Prérequis
@@ -160,6 +167,17 @@ packages/
 - **P4 — Templates et UX** : 4 templates, annotations GSAP, sous-titres
 - **P5 — Tests et docs** : couverture > 70 %, GitHub Action, doc hébergée
 - **P6 — Beta publique** : lancement open source, catalog HyperFrames
+
+## Tests d'intégration
+
+Voir [`tests/integration/README.md`](./tests/integration/README.md) pour la suite E2E sur Cal.com / Plane / Documenso / Twenty / Formbricks (3 modes : `plan-only`, `mock`, `full`). Cible CDC §6.2 : ≥ 80 % de réussite.
+
+```bash
+pnpm integration:mock         # $0, ~30 s, CI-able
+pnpm integration:plan         # ~$0.05, requiert ANTHROPIC_API_KEY
+pnpm integration:full         # ~$5-10, manuel uniquement
+pnpm integration:aggregate    # met à jour tests/integration/README-RESULTS.md
+```
 
 ## Contributing
 

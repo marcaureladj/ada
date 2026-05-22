@@ -1,0 +1,109 @@
+name: Integration suite
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Which suite mode to run'
+        required: true
+        default: 'plan-only'
+        type: choice
+        options:
+          - plan-only
+          - mock
+          - full
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  plan-and-mock:
+    name: Plan-only + mock (fast, CI)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.mode != 'full'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r build
+
+      - name: Mock suite (no API keys)
+        run: node tests/integration/run-suite.mjs --mode=mock
+
+      - name: Plan-only suite (requires Anthropic key)
+        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node tests/integration/run-suite.mjs --mode=plan-only
+
+      - name: Aggregate results
+        if: always()
+        run: node tests/integration/aggregate.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-results
+          path: |
+            tests/integration/results/
+            tests/integration/README-RESULTS.md
+
+  full-suite:
+    name: Full E2E (manual only)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'full'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r build
+      - run: pnpm playwright:install
+
+      - name: Run full suite
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ADA_CALCOM_EMAIL: ${{ secrets.ADA_CALCOM_EMAIL }}
+          ADA_CALCOM_PASSWORD: ${{ secrets.ADA_CALCOM_PASSWORD }}
+          ADA_PLANE_EMAIL: ${{ secrets.ADA_PLANE_EMAIL }}
+          ADA_PLANE_PASSWORD: ${{ secrets.ADA_PLANE_PASSWORD }}
+          ADA_DOCUMENSO_EMAIL: ${{ secrets.ADA_DOCUMENSO_EMAIL }}
+          ADA_DOCUMENSO_PASSWORD: ${{ secrets.ADA_DOCUMENSO_PASSWORD }}
+          ADA_TWENTY_EMAIL: ${{ secrets.ADA_TWENTY_EMAIL }}
+          ADA_TWENTY_PASSWORD: ${{ secrets.ADA_TWENTY_PASSWORD }}
+          ADA_FORMBRICKS_EMAIL: ${{ secrets.ADA_FORMBRICKS_EMAIL }}
+          ADA_FORMBRICKS_PASSWORD: ${{ secrets.ADA_FORMBRICKS_PASSWORD }}
+          ADA_HEADLESS: 'true'
+        run: node tests/integration/run-suite.mjs --mode=full
+
+      - name: Aggregate results
+        if: always()
+        run: node tests/integration/aggregate.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-full-results
+          path: |
+            tests/integration/results/
+            tests/integration/README-RESULTS.md
+            out/

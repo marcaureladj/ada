@@ -1,0 +1,35 @@
+project:
+  name: Twenty
+  url: https://app.twenty.com
+  language: fr
+  description: |
+    Twenty — CRM open source moderne.
+    Démo : login + création d'un compte client + ajout d'une note.
+
+auth:
+  type: credentials
+  email: ${ADA_TWENTY_EMAIL}
+  password: ${ADA_TWENTY_PASSWORD}
+
+scenarios:
+  - id: login
+    description: Connexion à Twenty
+  - id: create-company
+    description: Créer un compte client "Acme Corp"
+    preconditions: [login]
+  - id: add-note
+    description: Ajouter une note "Premier contact" au compte
+    preconditions: [create-company]
+
+output:
+  format: mp4
+  resolution: 1080p
+  ratio: '16:9'
+  template: framed
+  path: ./out/twenty-demo.mp4
+
+providers:
+  vision: claude-computer-use
+  text: claude
+  tts: elevenlabs
+  voice: french-pro-male

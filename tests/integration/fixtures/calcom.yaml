@@ -1,0 +1,35 @@
+project:
+  name: Cal.com
+  url: https://app.cal.com/auth/login
+  language: fr
+  description: |
+    Cal.com — plateforme open source de planification de rendez-vous.
+    Démo : connexion + création d'un event-type + copie du lien public.
+
+auth:
+  type: credentials
+  email: ${ADA_CALCOM_EMAIL}
+  password: ${ADA_CALCOM_PASSWORD}
+
+scenarios:
+  - id: login
+    description: Connexion via email + mot de passe
+  - id: create-event-type
+    description: Créer un nouveau type d'événement de 30 minutes
+    preconditions: [login]
+  - id: copy-public-link
+    description: Copier le lien public de l'event-type créé
+    preconditions: [create-event-type]
+
+output:
+  format: mp4
+  resolution: 1080p
+  ratio: '16:9'
+  template: framed
+  path: ./out/calcom-demo.mp4
+
+providers:
+  vision: claude-computer-use
+  text: claude
+  tts: elevenlabs
+  voice: french-pro-male

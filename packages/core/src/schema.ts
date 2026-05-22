@@ -124,10 +124,25 @@ export const agentActionSchema = z.object({
   duration: z.number().nonnegative().optional(),
   scrollAmount: z.number().nonnegative().optional(),
   scrollDirection: z.enum(['up', 'down', 'left', 'right']).optional(),
+  selector: z.string().optional(),
   reasoning: z.string(),
   timestamp: z.string(),
   screenshotBefore: z.string().optional(),
   screenshotAfter: z.string().optional(),
+});
+
+// Schema for an action as emitted by an LLM (no timestamp, no screenshot paths
+// — those are added by the runtime). Used by screenshot+JSON vision providers.
+export const agentActionInputSchema = z.object({
+  type: agentActionTypeSchema,
+  coordinate: coordinateSchema.optional(),
+  coordinateEnd: coordinateSchema.optional(),
+  text: z.string().optional(),
+  duration: z.number().nonnegative().optional(),
+  scrollAmount: z.number().nonnegative().optional(),
+  scrollDirection: z.enum(['up', 'down', 'left', 'right']).optional(),
+  selector: z.string().optional(),
+  reasoning: z.string(),
 });
 
 export const scriptSegmentSchema = z.object({

@@ -88,6 +88,12 @@ export interface AgentAction {
   duration?: number;
   scrollAmount?: number;
   scrollDirection?: ScrollDirection;
+  /**
+   * Optional CSS selector. Used by screenshot+JSON vision providers (gpt-4o,
+   * gemini, vertex) that don't have Computer Use coordinates. When present,
+   * the Navigator's runPlaywrightAction prefers it over `coordinate`.
+   */
+  selector?: string;
   reasoning: string;
   timestamp: string;
   screenshotBefore?: string;
