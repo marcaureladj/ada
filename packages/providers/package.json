@@ -1,6 +1,6 @@
 {
   "name": "@ada/providers",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "ADA pluggable providers — adapters vision (Claude Computer Use, GPT-4 Vision, Gemini, Qwen), text (Claude, OpenAI, Gemini, Ollama) et TTS (ElevenLabs, OpenAI, Kokoro).",
   "license": "Apache-2.0",
   "author": "Marc-Aurel",
@@ -14,7 +14,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["ada", "providers", "anthropic", "openai", "elevenlabs"],
+  "keywords": [
+    "ada",
+    "providers",
+    "anthropic",
+    "openai",
+    "elevenlabs"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

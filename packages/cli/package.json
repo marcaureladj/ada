@@ -1,6 +1,6 @@
 {
   "name": "ada",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "ADA — Autonomous Documentation Agent. CLI : génère une vidéo de documentation à partir d'une URL via un agent IA + HyperFrames.",
   "license": "Apache-2.0",
   "author": "Marc-Aurel",
@@ -14,7 +14,15 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["ada", "cli", "documentation", "video", "agent", "playwright", "hyperframes"],
+  "keywords": [
+    "ada",
+    "cli",
+    "documentation",
+    "video",
+    "agent",
+    "playwright",
+    "hyperframes"
+  ],
   "type": "module",
   "bin": {
     "ada": "./dist/cli.js"

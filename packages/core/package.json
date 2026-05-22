@@ -1,6 +1,6 @@
 {
   "name": "@ada/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "ADA core — types, schémas Zod et orchestrateur du pipeline 5 étages (Planner → Navigator → Scripter → Voicer → Composer).",
   "license": "Apache-2.0",
   "author": "Marc-Aurel",
@@ -14,7 +14,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["ada", "documentation", "video", "agent", "hyperframes", "playwright"],
+  "keywords": [
+    "ada",
+    "documentation",
+    "video",
+    "agent",
+    "hyperframes",
+    "playwright"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@ada/templates",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "ADA HyperFrames templates : classic, framed, split, social. Génèrent du HTML conforme au schéma HyperFrames à partir d'un Script + assets.",
   "license": "Apache-2.0",
   "author": "Marc-Aurel",
@@ -14,7 +14,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["ada", "hyperframes", "templates", "gsap", "video"],
+  "keywords": [
+    "ada",
+    "hyperframes",
+    "templates",
+    "gsap",
+    "video"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
