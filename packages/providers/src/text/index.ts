@@ -17,8 +17,15 @@ export interface TextProvider {
 
 export type TextProviderFactory = (config: TextProviderConfig) => TextProvider;
 
+import type { EventSink } from '@ada/core';
+
 export interface TextProviderConfig {
   apiKey?: string | undefined;
   model?: string | undefined;
   maxRetries?: number | undefined;
+  eventSink?: EventSink | undefined;
+  /** Custom base URL for OpenAI-compatible providers (Vertex, Fal, Replicate, …). */
+  baseURL?: string | undefined;
+  /** Logical name override exposed via provider.name (defaults to factory name). */
+  nameOverride?: string | undefined;
 }

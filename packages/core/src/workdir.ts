@@ -21,6 +21,7 @@ export interface Workdir {
   readonly captureWebm: string;
   readonly authStatePath: string;
   readonly auditLogPath: string;
+  readonly eventsNdjson: string;
 
   sceneDir(sceneId: string): string;
   screenshotPath(sceneId: string, step: number, kind: 'before' | 'after'): string;
@@ -64,6 +65,7 @@ export function createWorkdir(baseDir = './out'): Workdir {
     captureWebm: join(tracesDir, 'capture.webm'),
     authStatePath: join(root, 'auth-state.json'),
     auditLogPath: join(root, 'audit.log'),
+    eventsNdjson: join(root, 'events.ndjson'),
     sceneDir(sceneId: string) {
       const dir = join(screenshotsDir, sceneId);
       mkdirSync(dir, { recursive: true });

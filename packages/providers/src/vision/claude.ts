@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import {
   ModuleError,
+  withRetry,
   type AgentAction,
   type AgentActionType,
   type ScrollDirection,
@@ -35,12 +36,37 @@ function makeClient(config: VisionProviderConfig): Anthropic {
       'ANTHROPIC_API_KEY manquant. Définissez-le dans votre .env.',
     );
   }
-  return new Anthropic({ apiKey });
+  return new Anthropic({ apiKey, maxRetries: 0 });
 }
 
 function lazyClient(config: VisionProviderConfig): () => Anthropic {
   let cached: Anthropic | undefined;
   return () => (cached ??= makeClient(config));
+}
+
+function callWithRetry<T>(config: VisionProviderConfig, fn: () => Promise<T>): Promise<T> {
+  const sink = config.eventSink;
+  return withRetry(fn, {
+    maxAttempts: config.maxRetries !== undefined ? config.maxRetries + 1 : 3,
+    onAttempt: (attempt, error, delayMs) => {
+      sink?.emit({
+        level: 'warn',
+        type: 'api.anthropic.retry',
+        payload: {
+          attempt,
+          delayMs,
+          error: (error as Error)?.message ?? String(error),
+        },
+      });
+    },
+  }).then(({ result, stats }) => {
+    sink?.emit({
+      level: 'debug',
+      type: 'api.anthropic.call',
+      payload: { attempts: stats.attempts, totalDelayMs: stats.totalDelayMs },
+    });
+    return result;
+  });
 }
 
 // Computer Use returns actions as snake_case strings; map them to our AgentActionType.
@@ -178,15 +204,17 @@ export function createClaudeComputerUseProvider(config: VisionProviderConfig): V
       for (let iteration = 0; iteration < input.maxIterations; iteration++) {
         let response: Anthropic.Messages.Message;
         try {
-          response = await getClient().messages.create(
-            {
-              model,
-              max_tokens: 1500,
-              system: SYSTEM_PROMPT,
-              tools: [computerTool],
-              messages,
-            },
-            { headers: { 'anthropic-beta': beta } },
+          response = await callWithRetry(config, () =>
+            getClient().messages.create(
+              {
+                model,
+                max_tokens: 1500,
+                system: SYSTEM_PROMPT,
+                tools: [computerTool],
+                messages,
+              },
+              { headers: { 'anthropic-beta': beta } },
+            ),
           );
         } catch (err) {
           const message = (err as Error).message;

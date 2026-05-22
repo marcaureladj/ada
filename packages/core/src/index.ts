@@ -7,6 +7,27 @@ export * from './srt.js';
 export * from './template.js';
 export { mp3Duration } from './utils/mp3-duration.js';
 export { CostAccumulator, estimateCostUsd, type UsageDelta } from './utils/cost.js';
+export {
+  withRetry,
+  isTransient,
+  extractRetryAfterMs,
+  type RetryOptions,
+  type RetryStats,
+} from './utils/retry.js';
+export {
+  createFileEventSink,
+  createMemoryEventSink,
+  createCompositeEventSink,
+  createRelayEventSink,
+  countRetriesByProvider,
+  type AdaEvent,
+  type EventInput,
+  type EventLevel,
+  type EventSink,
+  type EventStage,
+  type MemoryEventSink,
+  type RelayEventSink,
+} from './events.js';
 
 export {
   createPlanner,

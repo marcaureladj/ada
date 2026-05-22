@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { ModuleError } from '@ada/core';
+import { ModuleError, withRetry } from '@ada/core';
 import type { z } from 'zod';
 import type { TextCompletionRequest, TextProvider, TextProviderConfig } from './index.js';
 import { buildStructuredSystem, tryParseStructured } from './structured.js';
@@ -20,24 +20,58 @@ export interface OpenAiTextProviderInternalDeps {
   client?: OpenAiClientLike;
 }
 
-function makeClient(config: TextProviderConfig): OpenAI {
+function makeClient(config: TextProviderConfig, providerName: string): OpenAI {
   const apiKey = config.apiKey ?? process.env['OPENAI_API_KEY'];
   if (!apiKey) {
     throw new ModuleError(
-      'TextProvider:openai',
-      'OPENAI_API_KEY manquant. Définissez-le dans votre .env.',
+      `TextProvider:${providerName}`,
+      `Clé API manquante pour ${providerName}. Définissez-la dans votre .env.`,
     );
   }
-  return new OpenAI({ apiKey });
+  return new OpenAI({
+    apiKey,
+    maxRetries: 0,
+    ...(config.baseURL !== undefined ? { baseURL: config.baseURL } : {}),
+  });
 }
 
 function lazyClient(
   config: TextProviderConfig,
   injected: OpenAiClientLike | undefined,
+  providerName: string,
 ): () => OpenAiClientLike {
   if (injected) return () => injected;
   let cached: OpenAI | undefined;
-  return () => (cached ??= makeClient(config));
+  return () => (cached ??= makeClient(config, providerName));
+}
+
+function callWithRetry<T>(
+  config: TextProviderConfig,
+  providerName: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const sink = config.eventSink;
+  return withRetry(fn, {
+    maxAttempts: config.maxRetries !== undefined ? config.maxRetries + 1 : 3,
+    onAttempt: (attempt, error, delayMs) => {
+      sink?.emit({
+        level: 'warn',
+        type: `api.${providerName}.retry`,
+        payload: {
+          attempt,
+          delayMs,
+          error: (error as Error)?.message ?? String(error),
+        },
+      });
+    },
+  }).then(({ result, stats }) => {
+    sink?.emit({
+      level: 'debug',
+      type: `api.${providerName}.call`,
+      payload: { attempts: stats.attempts, totalDelayMs: stats.totalDelayMs },
+    });
+    return result;
+  });
 }
 
 function extractText(message: OpenAI.Chat.ChatCompletion): string {
@@ -48,23 +82,26 @@ export function createOpenAiTextProvider(
   config: TextProviderConfig,
   internalDeps: OpenAiTextProviderInternalDeps = {},
 ): TextProvider {
-  const getClient = lazyClient(config, internalDeps.client);
+  const providerName = config.nameOverride ?? 'openai';
+  const getClient = lazyClient(config, internalDeps.client, providerName);
   const model = config.model ?? process.env['ADA_OPENAI_MODEL'] ?? DEFAULT_MODEL;
   const maxRetries = config.maxRetries ?? 1;
 
   return {
-    name: 'openai',
+    name: providerName,
     async complete(request: TextCompletionRequest): Promise<string> {
       const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
       if (request.system) messages.push({ role: 'system', content: request.system });
       messages.push({ role: 'user', content: request.prompt });
 
-      const response = await getClient().chat.completions.create({
-        model,
-        max_tokens: request.maxTokens ?? 4096,
-        temperature: request.temperature ?? 0.7,
-        messages,
-      });
+      const response = await callWithRetry(config, providerName, () =>
+        getClient().chat.completions.create({
+          model,
+          max_tokens: request.maxTokens ?? 4096,
+          temperature: request.temperature ?? 0.7,
+          messages,
+        }),
+      );
       return extractText(response);
     },
 
@@ -79,16 +116,18 @@ export function createOpenAiTextProvider(
         const userMessage = lastFeedback
           ? `${request.prompt}\n\nCORRECTION: ${lastFeedback}`
           : request.prompt;
-        const response = await getClient().chat.completions.create({
-          model,
-          max_tokens: request.maxTokens ?? 4096,
-          temperature: request.temperature ?? 0.3,
-          response_format: { type: 'json_object' },
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: userMessage },
-          ],
-        });
+        const response = await callWithRetry(config, providerName, () =>
+          getClient().chat.completions.create({
+            model,
+            max_tokens: request.maxTokens ?? 4096,
+            temperature: request.temperature ?? 0.3,
+            response_format: { type: 'json_object' },
+            messages: [
+              { role: 'system', content: system },
+              { role: 'user', content: userMessage },
+            ],
+          }),
+        );
         const raw = extractText(response);
         const result = tryParseStructured(request.schema, raw);
         if (result.ok) return result.data;
@@ -97,7 +136,7 @@ export function createOpenAiTextProvider(
       }
 
       throw new ModuleError(
-        'TextProvider:openai',
+        `TextProvider:${providerName}`,
         `completeStructured a échoué après ${maxRetries + 1} tentatives : ${lastFeedback}`,
       );
     },

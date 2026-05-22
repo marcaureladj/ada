@@ -16,6 +16,10 @@ export interface RunOptions {
 }
 
 export async function runCommand(options: RunOptions): Promise<number> {
+  const abortController = new AbortController();
+  const onSigint = (): void => abortController.abort();
+  process.once('SIGINT', onSigint);
+
   try {
     const config = loadConfig({
       ...(options.config !== undefined ? { configPath: options.config } : {}),
@@ -27,10 +31,12 @@ export async function runCommand(options: RunOptions): Promise<number> {
     });
 
     logger.info({ url: config.project.url, template: config.output.template }, 'starting ada run');
-    const deps = buildPipelineDeps(config);
+    const { deps, providerSink } = buildPipelineDeps(config);
     const report = await runPipeline(config, deps, {
       ...(options.dryRun !== undefined ? { dryRun: options.dryRun } : {}),
       onProgress: (event) => logger.debug(event, 'pipeline event'),
+      eventSink: providerSink,
+      abortSignal: abortController.signal,
     });
 
     emit(
@@ -46,5 +52,7 @@ export async function runCommand(options: RunOptions): Promise<number> {
     }
     emitError(options.outputFormat, 'E_RUNTIME', (err as Error).message);
     return 2;
+  } finally {
+    process.removeListener('SIGINT', onSigint);
   }
 }
