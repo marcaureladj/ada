@@ -49,7 +49,7 @@ jobs:
         if: always()
         run: node tests/integration/aggregate.mjs
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: integration-results
@@ -99,7 +99,7 @@ jobs:
         if: always()
         run: node tests/integration/aggregate.mjs
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: integration-full-results
