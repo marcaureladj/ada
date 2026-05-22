@@ -66,35 +66,62 @@ export interface NavigatorOptions {
 const SCROLL_PIXELS_PER_AMOUNT = 100;
 
 async function runPlaywrightAction(page: Page, action: AgentAction): Promise<void> {
+  // When a selector is present (screenshot+JSON vision providers), prefer it
+  // over the coordinate path — selectors are usually more stable.
+  const selector = action.selector;
   switch (action.type) {
     case 'left_click': {
-      const [x, y] = action.coordinate ?? [0, 0];
-      await page.mouse.click(x, y);
+      if (selector) {
+        await page.click(selector, { timeout: 5000 });
+      } else {
+        const [x, y] = action.coordinate ?? [0, 0];
+        await page.mouse.click(x, y);
+      }
       break;
     }
     case 'right_click': {
-      const [x, y] = action.coordinate ?? [0, 0];
-      await page.mouse.click(x, y, { button: 'right' });
+      if (selector) {
+        await page.click(selector, { button: 'right', timeout: 5000 });
+      } else {
+        const [x, y] = action.coordinate ?? [0, 0];
+        await page.mouse.click(x, y, { button: 'right' });
+      }
       break;
     }
     case 'middle_click': {
-      const [x, y] = action.coordinate ?? [0, 0];
-      await page.mouse.click(x, y, { button: 'middle' });
+      if (selector) {
+        await page.click(selector, { button: 'middle', timeout: 5000 });
+      } else {
+        const [x, y] = action.coordinate ?? [0, 0];
+        await page.mouse.click(x, y, { button: 'middle' });
+      }
       break;
     }
     case 'double_click': {
-      const [x, y] = action.coordinate ?? [0, 0];
-      await page.mouse.dblclick(x, y);
+      if (selector) {
+        await page.dblclick(selector, { timeout: 5000 });
+      } else {
+        const [x, y] = action.coordinate ?? [0, 0];
+        await page.mouse.dblclick(x, y);
+      }
       break;
     }
     case 'triple_click': {
-      const [x, y] = action.coordinate ?? [0, 0];
-      await page.mouse.click(x, y, { clickCount: 3 });
+      if (selector) {
+        await page.click(selector, { clickCount: 3, timeout: 5000 });
+      } else {
+        const [x, y] = action.coordinate ?? [0, 0];
+        await page.mouse.click(x, y, { clickCount: 3 });
+      }
       break;
     }
     case 'type': {
       if (action.text === undefined) throw new Error('type sans text');
-      await page.keyboard.type(action.text);
+      if (selector) {
+        await page.fill(selector, action.text, { timeout: 5000 });
+      } else {
+        await page.keyboard.type(action.text);
+      }
       break;
     }
     case 'key': {

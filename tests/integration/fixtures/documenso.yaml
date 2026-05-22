@@ -1,0 +1,35 @@
+project:
+  name: Documenso
+  url: https://app.documenso.com/signin
+  language: fr
+  description: |
+    Documenso — alternative open source à DocuSign.
+    Démo : login + démarrage d'un nouveau document à signer.
+
+auth:
+  type: credentials
+  email: ${ADA_DOCUMENSO_EMAIL}
+  password: ${ADA_DOCUMENSO_PASSWORD}
+
+scenarios:
+  - id: login
+    description: Connexion à Documenso
+  - id: start-document
+    description: Démarrer un nouveau document depuis le dashboard
+    preconditions: [login]
+  - id: upload-and-prepare
+    description: Téléverser un fichier PDF et placer un champ signature
+    preconditions: [start-document]
+
+output:
+  format: mp4
+  resolution: 1080p
+  ratio: '16:9'
+  template: framed
+  path: ./out/documenso-demo.mp4
+
+providers:
+  vision: claude-computer-use
+  text: claude
+  tts: elevenlabs
+  voice: french-pro-male

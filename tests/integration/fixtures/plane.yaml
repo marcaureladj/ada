@@ -1,0 +1,35 @@
+project:
+  name: Plane
+  url: https://app.plane.so/sign-in
+  language: fr
+  description: |
+    Plane — outil open source de gestion de projet (alternative à Jira).
+    Démo : login + création d'un projet + ajout d'une issue.
+
+auth:
+  type: credentials
+  email: ${ADA_PLANE_EMAIL}
+  password: ${ADA_PLANE_PASSWORD}
+
+scenarios:
+  - id: login
+    description: Connexion à Plane
+  - id: create-project
+    description: Créer un projet "Demo ADA"
+    preconditions: [login]
+  - id: create-issue
+    description: Ajouter une issue "Première tâche" au projet
+    preconditions: [create-project]
+
+output:
+  format: mp4
+  resolution: 1080p
+  ratio: '16:9'
+  template: framed
+  path: ./out/plane-demo.mp4
+
+providers:
+  vision: claude-computer-use
+  text: claude
+  tts: elevenlabs
+  voice: french-pro-male

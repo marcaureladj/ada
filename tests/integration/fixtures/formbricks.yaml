@@ -1,0 +1,35 @@
+project:
+  name: Formbricks
+  url: https://app.formbricks.com/auth/login
+  language: fr
+  description: |
+    Formbricks — outil open source d'enquête utilisateur (alternative à Typeform).
+    Démo : login + création d'une survey depuis un template.
+
+auth:
+  type: credentials
+  email: ${ADA_FORMBRICKS_EMAIL}
+  password: ${ADA_FORMBRICKS_PASSWORD}
+
+scenarios:
+  - id: login
+    description: Connexion à Formbricks
+  - id: pick-template
+    description: Choisir un template de survey ("Net Promoter Score")
+    preconditions: [login]
+  - id: customize-question
+    description: Personnaliser la première question
+    preconditions: [pick-template]
+
+output:
+  format: mp4
+  resolution: 1080p
+  ratio: '16:9'
+  template: framed
+  path: ./out/formbricks-demo.mp4
+
+providers:
+  vision: claude-computer-use
+  text: claude
+  tts: elevenlabs
+  voice: french-pro-male
