@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Autonomous Documentation Agent</strong><br/>
-  Génère automatiquement une vidéo de documentation narrée d'une web app, sans intervention humaine.
+  Automatically generates a narrated documentation video of a web app — no human involved.
 </p>
 
 <p align="center">
@@ -19,37 +19,37 @@
 </p>
 
 <p align="center">
-  <em>Une URL + des identifiants → un MP4 avec narration, sous-titres, annotations GSAP. ~10 minutes.</em>
+  <em>One URL + credentials → an MP4 with narration, captions, and GSAP annotations. ~10 minutes.</em>
 </p>
 
 ---
 
-## 🎬 Ce que fait ADA
+## 🎬 What ADA does
 
 ```bash
 ada run --url https://app.cal.com --credentials demo@test.com:secret --output demo.mp4
 ```
 
-→ ADA ouvre Chrome, se connecte, **explore l'application comme un product manager**, génère un script narratif, synthétise une voix off, assemble le tout en un MP4 prêt à diffuser.
+→ ADA opens Chrome, signs in, **explores the application like a product manager**, generates a narration script, synthesizes a voice-over, and assembles everything into a ready-to-ship MP4.
 
-**100 % agentique.** Aucune capture humaine préalable, contrairement à Arcade / Supademo / Tango.
+**100% agentic.** No human pre-recording required, unlike Arcade / Supademo / Tango.
 
-## ✨ Pourquoi ADA
+## ✨ Why ADA
 
-- 🤖 **Pilotage par agent IA** — Claude Computer Use (officiel) ou GPT-4o / Gemini en pattern screenshot+selector
-- 🎙️ **Voix naturelle multi-langue** — ElevenLabs, OpenAI TTS, Google Cloud TTS, Fal (Kokoro), Replicate (XTTS)
-- 🎞️ **Rendu HTML-native** — HyperFrames produit des MP4 déterministes depuis du HTML/CSS/GSAP
-- ✨ **Annotations automatiques** — flèches, zooms, callouts animés sur chaque clic via GSAP
-- 🛡️ **Auth + masquage credentials** — passwords jamais transmis aux LLM, masqués dans les screenshots
-- 🧪 **Mode mock complet** — pipeline entier exécutable sans aucune clé API (`ADA_MOCK=1`)
-- 📊 **Observabilité native** — retry exponential backoff, events.ndjson, RunReport avec timings et coût
-- 📜 **Open source, Apache 2.0** — aucune redevance, redistribution autorisée
+- 🤖 **AI-driven browser piloting** — Claude Computer Use (official) or GPT-4o / Gemini via screenshot+selector
+- 🎙️ **Natural multilingual voice** — ElevenLabs, OpenAI TTS, Google Cloud TTS, Fal (Kokoro), Replicate (XTTS)
+- 🎞️ **HTML-native rendering** — HyperFrames produces deterministic MP4s from HTML/CSS/GSAP
+- ✨ **Automatic annotations** — arrows, zooms, callouts animated on every click via GSAP
+- 🛡️ **Auth + credential masking** — passwords never sent to LLMs, masked out of screenshots
+- 🧪 **Full mock mode** — run the entire pipeline with no API keys (`ADA_MOCK=1`)
+- 📊 **Built-in observability** — exponential-backoff retries, events.ndjson, RunReport with timings and cost
+- 📜 **Open source, Apache 2.0** — no royalties, redistribution allowed
 
 ---
 
 ## 🚀 Quickstart
 
-### Sans clé API (mode mock)
+### No API key (mock mode)
 
 ```bash
 git clone https://github.com/marcaureladj/ada.git && cd ada
@@ -57,23 +57,23 @@ pnpm install && pnpm -r build
 ADA_MOCK=1 node packages/cli/dist/cli.js plan --url https://example.com --output-format json
 ```
 
-### Avec tes clés (E2E réel, ~$1-2 par vidéo)
+### With your keys (real E2E, ~$1-2 per video)
 
 ```bash
-# 1. Une fois
+# 1. One-time setup
 pnpm playwright:install
-cp .env.example .env   # remplir ANTHROPIC_API_KEY + ELEVENLABS_API_KEY
+cp .env.example .env   # fill in ANTHROPIC_API_KEY + ELEVENLABS_API_KEY
 
-# 2. Plan court (~$0.01)
+# 2. Cheap plan-only run (~$0.01)
 ada plan --url https://docs.anthropic.com --output-format json
 
-# 3. Pipeline complet (~$1-2, ~10 min)
+# 3. Full pipeline (~$1-2, ~10 min)
 ada run --url https://docs.anthropic.com --output demo.mp4 --output-format json
 ```
 
 ---
 
-## 🧠 Comment ça marche
+## 🧠 How it works
 
 ```
 ┌──────────┐    ┌────────────┐    ┌──────────┐    ┌────────┐    ┌──────────┐
@@ -84,21 +84,21 @@ ada run --url https://docs.anthropic.com --output demo.mp4 --output-format json
    GPT-4o          + Playwright       GPT-4o         OpenAI/etc.   (HTML→MP4)
 ```
 
-| Étage | Rôle | Sortie |
+| Stage | Role | Output |
 |---|---|---|
-| **1. Planner** | Décompose la mission en scènes (depuis URL + README) | `scenarios.json` |
-| **2. Navigator** | Pilote Playwright via Computer Use ou screenshot+selector | `traces/*.json` + capture WebM + screenshots |
-| **3. Scripter** | Transforme les traces en script narratif découpé en segments | `script.json` |
-| **4. Voicer** | Synthèse vocale segment par segment, avec cache | `audio/*.mp3` |
-| **5. Composer** | Génère la composition HTML HyperFrames + lance le rendu MP4 | `demo.mp4` + sous-titres `.srt` `.vtt` + transcript `.md` |
+| **1. Planner** | Decomposes the mission into scenes (from URL + README) | `scenarios.json` |
+| **2. Navigator** | Drives Playwright via Computer Use or screenshot+selector | `traces/*.json` + WebM capture + screenshots |
+| **3. Scripter** | Turns traces into a narration script split into segments | `script.json` |
+| **4. Voicer** | Synthesizes voice segment by segment, with cache | `audio/*.mp3` |
+| **5. Composer** | Generates the HyperFrames HTML composition + runs the MP4 render | `demo.mp4` + `.srt`/`.vtt` subtitles + `.md` transcript |
 
-Le pipeline complet est orchestré dans [`packages/core/src/pipeline.ts`](./packages/core/src/pipeline.ts) avec **retry exponential backoff**, **abort signal** (Ctrl+C propre), et **log structuré NDJSON** dans `events.ndjson`.
+The full pipeline is orchestrated in [`packages/core/src/pipeline.ts`](./packages/core/src/pipeline.ts) with **exponential-backoff retries**, an **abort signal** (clean Ctrl+C), and **structured NDJSON logging** to `events.ndjson`.
 
 ---
 
-## 🔌 Providers supportés
+## 🔌 Supported providers
 
-### 🧠 Vision (qui pilote le navigateur)
+### 🧠 Vision (drives the browser)
 
 <p>
   <img src="https://img.shields.io/badge/Claude-Computer_Use-D97757?logo=anthropic&logoColor=white" alt="Claude" />
@@ -109,9 +109,9 @@ Le pipeline complet est orchestré dans [`packages/core/src/pipeline.ts`](./pack
 
 | Provider | Backend | Pattern | Env |
 |---|---|---|---|
-| `claude-computer-use` | Anthropic Messages API + tool `computer_20250124` | Computer Use officiel (mouse/keyboard) | `ANTHROPIC_API_KEY` |
+| `claude-computer-use` | Anthropic Messages API + `computer_20250124` tool | Official Computer Use (mouse/keyboard) | `ANTHROPIC_API_KEY` |
 | `gpt-4-vision` | OpenAI Chat Completions + image input | screenshot + JSON + selector | `OPENAI_API_KEY` |
-| `gemini-vision` | Google AI Studio (direct, sans GCP setup) | screenshot + JSON + selector | `GOOGLE_API_KEY` |
+| `gemini-vision` | Google AI Studio (direct, no GCP setup) | screenshot + JSON + selector | `GOOGLE_API_KEY` |
 | `vertex-vision` | Vertex AI OpenAI-compatible endpoint | screenshot + JSON + selector | `ADA_VERTEX_API_KEY` + `ADA_VERTEX_API_URL` |
 
 ### 💬 Text (Planner / Scripter)
@@ -124,14 +124,14 @@ Le pipeline complet est orchestré dans [`packages/core/src/pipeline.ts`](./pack
   <img src="https://img.shields.io/badge/Replicate-OpenAI--proxy-000000?logo=replicate&logoColor=white" alt="Replicate" />
 </p>
 
-| Provider | Modèle par défaut | Env |
+| Provider | Default model | Env |
 |---|---|---|
 | `claude` | `claude-sonnet-4-6` | `ANTHROPIC_API_KEY`, `ADA_CLAUDE_MODEL` |
 | `openai` | `gpt-4o` | `OPENAI_API_KEY`, `ADA_OPENAI_MODEL` |
 | `vertex` | `google/gemini-2.5-pro` | `ADA_VERTEX_API_KEY`, `ADA_VERTEX_API_URL`, `ADA_VERTEX_MODEL` |
 | `fal` | `meta-llama/Llama-3.1-70B-Instruct` | `ADA_FAL_API_KEY`, `ADA_FAL_API_URL`, `ADA_FAL_MODEL` |
 | `replicate` | `meta/llama-3.1-405b-instruct` | `ADA_REPLICATE_API_KEY`, `ADA_REPLICATE_API_URL` |
-| `openai-compat` | générique (LM Studio, vLLM, OpenRouter, Ollama) | `ADA_GENERIC_API_KEY`, `ADA_GENERIC_API_URL` |
+| `openai-compat` | any OpenAI-compatible endpoint (LM Studio, vLLM, OpenRouter, Ollama) | `ADA_GENERIC_API_KEY`, `ADA_GENERIC_API_URL` |
 
 ### 🎙️ TTS (Voicer)
 
@@ -143,7 +143,7 @@ Le pipeline complet est orchestré dans [`packages/core/src/pipeline.ts`](./pack
   <img src="https://img.shields.io/badge/Replicate-xtts--v2-000000?logo=replicate&logoColor=white" alt="Replicate" />
 </p>
 
-| Provider | Modèle par défaut | Env |
+| Provider | Default model | Env |
 |---|---|---|
 | `elevenlabs` | `eleven_multilingual_v2` | `ELEVENLABS_API_KEY` |
 | `openai-tts` | `tts-1` | `OPENAI_API_KEY`, `ADA_OPENAI_TTS_MODEL` |
@@ -151,7 +151,7 @@ Le pipeline complet est orchestré dans [`packages/core/src/pipeline.ts`](./pack
 | `fal-tts` | `fal-ai/kokoro` | `ADA_FAL_API_KEY`, `ADA_FAL_TTS_MODEL` |
 | `replicate-tts` | `lucataco/xtts-v2` | `ADA_REPLICATE_API_KEY`, `ADA_REPLICATE_TTS_MODEL` |
 
-### 🌐 Stack technique
+### 🌐 Tech stack
 
 <p>
   <img src="https://img.shields.io/badge/Playwright-Chromium-2EAD33?logo=playwright&logoColor=white" alt="Playwright" />
@@ -164,57 +164,57 @@ Le pipeline complet est orchestré dans [`packages/core/src/pipeline.ts`](./pack
 
 ---
 
-## 🎨 Templates HyperFrames
+## 🎨 HyperFrames templates
 
-4 templates de rendu visuels, sélectionnables via `--template <name>` ou `output.template` dans `ada.yaml` :
+Four visual rendering templates, selectable via `--template <name>` or `output.template` in `ada.yaml`:
 
 | Template | Format | Annotations | Description |
 |---|---|---|---|
-| `classic` | 16:9 | sans | Plein écran capture + voix off + sous-titres minimalistes |
-| `framed` | 16:9 | flèches GSAP + callouts | Cadre browser stylé macOS, annotations animées sur clics |
-| `split` | 16:9 | callouts panneau droit | Grille 60/40 vidéo + scénario narratif latéral |
-| `social` | **9:16** | zoom-pulses | Format vertical pour Reels / TikTok, captions XXL animées |
+| `classic` | 16:9 | none | Full-screen capture + voice-over + minimal captions |
+| `framed` | 16:9 | GSAP arrows + callouts | macOS-style browser frame, animated annotations on every click |
+| `split` | 16:9 | callouts in right panel | 60/40 grid: video left, narrative script right |
+| `social` | **9:16** | zoom-pulses | Vertical for Reels / TikTok, XXL animated captions |
 
-Les annotations sont **automatiquement générées** depuis les coordonnées Computer Use des clics, animées via GSAP timeline seekable par HyperFrames (cf. [`packages/templates/src/annotations.ts`](./packages/templates/src/annotations.ts) et [`gsap-script.ts`](./packages/templates/src/gsap-script.ts)).
-
----
-
-## 🛡️ Sécurité
-
-ADA gère trois catégories sensibles : **screenshots**, **credentials**, **LLM context**. Les garanties :
-
-1. **Authentification déterministe via Playwright** — passwords remplis via `page.fill()`, jamais transmis à un LLM.
-2. **Masquage automatique des screenshots** avant envoi à Claude/GPT-4o : `<input type="password">` + sélecteurs custom (`ADA_MASK_SELECTORS=".user-email,#api-key"`) sont écrasés par un rectangle noir.
-3. **Audit log** (`audit.log` dans le workdir) — chaque masque appliqué est tracé sans jamais loguer la valeur masquée.
-4. **Test canary** dédié : un test unitaire vérifie qu'un mot de passe fictif n'apparaît jamais dans l'auditLog ni sur disque.
-5. **Fail-fast** : credentials manquants → exit code 1 avec message clair AVANT lancement Playwright/Anthropic.
-
-Voir [`SECURITY.md`](./SECURITY.md) pour la divulgation responsable de vulnérabilités.
+Annotations are **automatically generated** from the Computer Use coordinates of every click, animated through a GSAP timeline that HyperFrames can seek deterministically. See [`packages/templates/src/annotations.ts`](./packages/templates/src/annotations.ts) and [`gsap-script.ts`](./packages/templates/src/gsap-script.ts).
 
 ---
 
-## 📊 Observabilité
+## 🛡️ Security
 
-Chaque run produit un dossier `./out/<run-id>/` :
+ADA handles three sensitive categories: **screenshots**, **credentials**, **LLM context**. Guarantees:
+
+1. **Deterministic authentication via Playwright** — passwords are filled with `page.fill()` and never sent to any LLM.
+2. **Automatic screenshot masking** before each call to Claude/GPT-4o: `<input type="password">` and custom selectors (`ADA_MASK_SELECTORS=".user-email,#api-key"`) are painted over with a black rectangle.
+3. **Audit log** (`audit.log` in the workdir) — every applied mask is recorded, never the masked value itself.
+4. **Canary test** — a unit test verifies that a fake password never appears in `auditLog` nor on disk.
+5. **Fail-fast** — missing credentials → exit code 1 with a clear message BEFORE launching Playwright/Anthropic.
+
+See [`SECURITY.md`](./SECURITY.md) for responsible disclosure.
+
+---
+
+## 📊 Observability
+
+Every run produces an `./out/<run-id>/` directory:
 
 ```
 out/abc123/
-├── scenarios.json     # plan généré par le Planner
-├── traces/            # actions de l'agent + capture WebM
-├── screenshots/       # avant/après pour chaque action
-├── script.json        # texte narratif segmenté
-├── audio/             # MP3 par segment
+├── scenarios.json     # plan generated by the Planner
+├── traces/            # agent actions + WebM capture
+├── screenshots/       # before/after for each action
+├── script.json        # segmented narrative text
+├── audio/             # MP3 per segment
 ├── composition/
-│   └── composition.html  # HTML HyperFrames + GSAP
+│   └── composition.html  # HyperFrames + GSAP HTML
 ├── subtitles.srt
 ├── subtitles.vtt
 ├── transcript.md
-├── audit.log          # masques credentials appliqués
-├── events.ndjson      # log structuré (1 ligne JSON par event)
-└── report.json        # RunReport complet
+├── audit.log          # credential masks applied
+├── events.ndjson      # structured log (1 JSON line per event)
+└── report.json        # full RunReport
 ```
 
-Le `RunReport` JSON contient :
+The `RunReport` JSON looks like:
 
 ```jsonc
 {
@@ -232,24 +232,24 @@ Le `RunReport` JSON contient :
 }
 ```
 
-Retry exponential backoff (3 tentatives, jitter, `Retry-After` honoré) sur **tous** les appels API. Voir [`packages/core/src/utils/retry.ts`](./packages/core/src/utils/retry.ts).
+Exponential-backoff retries (3 attempts, jitter, `Retry-After` honored) on **every** API call. See [`packages/core/src/utils/retry.ts`](./packages/core/src/utils/retry.ts).
 
 ---
 
-## 🧪 Tests d'intégration (CDC §6.2)
+## 🧪 Integration tests (spec §6.2)
 
-Suite E2E sur 5 apps open source de référence : **Cal.com**, **Plane**, **Documenso**, **Twenty**, **Formbricks**.
+End-to-end suite on 5 reference open-source apps: **Cal.com**, **Plane**, **Documenso**, **Twenty**, **Formbricks**.
 
 ```bash
-pnpm integration:mock         # $0,   ~30 s, CI-able
-pnpm integration:plan         # ~$0.05, requiert ANTHROPIC_API_KEY
-pnpm integration:full         # ~$5-10, manuel uniquement (5 MP4 générés)
-pnpm integration:aggregate    # met à jour tests/integration/README-RESULTS.md
+pnpm integration:mock         # $0,   ~30 s, CI-friendly
+pnpm integration:plan         # ~$0.05, requires ANTHROPIC_API_KEY
+pnpm integration:full         # ~$5-10, manual only (5 MP4s generated)
+pnpm integration:aggregate    # updates tests/integration/README-RESULTS.md
 ```
 
-**Cible CDC §6.2** : ≥ 80 % de réussite. La suite mock passe **5/5 ✓** localement. Voir [`tests/integration/README.md`](./tests/integration/README.md).
+**Spec §6.2 target**: ≥ 80% pass rate. The mock suite passes **5/5 ✓** locally. See [`tests/integration/README.md`](./tests/integration/README.md).
 
-Workflow GitHub Actions : [`.github/workflows/integration.yml`](./.github/workflows/integration.yml) — `plan-only` + `mock` au tag `v*`, `full` en `workflow_dispatch` manuel.
+GitHub Actions workflow: [`.github/workflows/integration.yml`](./.github/workflows/integration.yml) — `plan-only` + `mock` on tag `v*`, `full` via manual `workflow_dispatch`.
 
 ---
 
@@ -273,7 +273,7 @@ project:
   name: MyApp
   url: https://app.cal.com
   language: fr
-  description: "Plateforme de prise de rendez-vous open source"
+  description: "Open-source scheduling platform"
 
 auth:
   type: credentials
@@ -282,9 +282,9 @@ auth:
 
 scenarios:
   - id: signup
-    description: Création d'un compte
+    description: Create an account
   - id: create-event
-    description: Création d'un event-type 30 min
+    description: Create a 30-minute event type
     preconditions: [signup]
 
 output:
@@ -295,15 +295,15 @@ output:
   path: ./demo.mp4
 
 providers:
-  vision: claude-computer-use   # ou gpt-4-vision, gemini-vision, vertex-vision
-  text: claude                  # ou openai, vertex, fal, replicate, openai-compat
-  tts: elevenlabs               # ou openai-tts, vertex-tts, fal-tts, replicate-tts
+  vision: claude-computer-use   # or gpt-4-vision, gemini-vision, vertex-vision
+  text: claude                  # or openai, vertex, fal, replicate, openai-compat
+  tts: elevenlabs               # or openai-tts, vertex-tts, fal-tts, replicate-tts
   voice: french-pro-male
 ```
 
-### Variables d'environnement
+### Environment variables
 
-Voir [`.env.example`](./.env.example) — section complète avec toutes les clés API et modèles par défaut.
+See [`.env.example`](./.env.example) — the full reference with every API key and default model.
 
 ---
 
@@ -311,88 +311,88 @@ Voir [`.env.example`](./.env.example) — section complète avec toutes les clé
 
 ```
 packages/
-├── core/         @ada/core      Types, schémas Zod, pipeline 5 étages, modules (Planner→Composer)
-├── providers/    @ada/providers Adapters vision/text/TTS (Claude, OpenAI, Gemini, Vertex, Fal, Replicate, ElevenLabs)
-├── templates/    @ada/templates 4 templates HyperFrames + annotations GSAP automatiques
-├── cli/          ada            CLI (Commander.js) — bin `ada`
+├── core/         @ada/core      Types, Zod schemas, 5-stage pipeline, modules (Planner→Composer)
+├── providers/    @ada/providers Vision/text/TTS adapters (Claude, OpenAI, Gemini, Vertex, Fal, Replicate, ElevenLabs)
+├── templates/    @ada/templates 4 HyperFrames templates + automatic GSAP annotations
+├── cli/          ada            CLI (Commander.js) — `ada` bin
 └── skill/        @ada/skill     SKILL.md installable via `npx skills add marcaureladj/ada`
 tests/
-└── integration/  Fixtures + orchestrateur + workflow Actions pour les 5 apps OS
+└── integration/  Fixtures + orchestrator + Actions workflow for the 5 OS apps
 ```
 
-**Stack** : Node 22+, pnpm 9, TypeScript strict, `node --test` + `tsx`, oxlint, Prettier, Changesets.
+**Stack**: Node 22+, pnpm 9, strict TypeScript, `node --test` + `tsx`, oxlint, Prettier, Changesets.
 
 ---
 
-## 📦 Installation et build
+## 📦 Install and build
 
 ```bash
-# Prérequis : Node 22+, pnpm 9+
+# Prereqs: Node 22+, pnpm 9+
 git clone https://github.com/marcaureladj/ada.git
 cd ada
-pnpm install                # + active simple-git-hooks
-pnpm -r build               # compile tous les packages
+pnpm install                # + installs simple-git-hooks
+pnpm -r build               # compiles every package
 pnpm test                   # 146 tests via node:test + tsx
 pnpm typecheck              # tsc -b --noEmit
 pnpm lint                   # oxlint
 ```
 
-Pour la première exécution réelle :
+For the first real run:
 
 ```bash
-pnpm playwright:install     # télécharge Chromium pour Playwright
-cp .env.example .env        # remplir au moins ANTHROPIC_API_KEY + ELEVENLABS_API_KEY
+pnpm playwright:install     # downloads Chromium for Playwright
+cp .env.example .env        # fill in at least ANTHROPIC_API_KEY + ELEVENLABS_API_KEY
 ```
 
 ---
 
 ## 🗺️ Roadmap
 
-### ✅ v1.0 — Fait (sessions 1-11)
+### ✅ v1.0 — Done (sessions 1-11)
 
-- Pipeline 5 étages complet end-to-end
-- Computer Use officiel + 3 vision providers alternatifs
-- 5 providers TTS, 6 providers text
-- Auth + masquage credentials (testé canary)
-- 4 templates avec annotations GSAP
-- Robustesse : retry, events.ndjson, RunReport enrichi, Ctrl+C propre
-- 146 tests (unit + intégration)
-- CI multi-OS, Changesets ready
-- Suite intégration 5 apps OS
+- Complete end-to-end 5-stage pipeline
+- Official Computer Use + 3 alternative vision providers
+- 5 TTS providers, 6 text providers
+- Auth + credential masking (canary-tested)
+- 4 templates with GSAP annotations
+- Robustness: retries, events.ndjson, enriched RunReport, clean Ctrl+C
+- 146 tests (unit + integration)
+- Multi-OS CI, Changesets ready
+- 5-OS-app integration suite
 
-### 🔜 v1.0 — Validation finale
+### 🔜 v1.0 — Final validation
 
-- [ ] Run réel sur docs.anthropic.com avec tes clés (debug runtime)
-- [ ] Push GitHub + premier release NPM via Changesets
-- [ ] Publication skill `marcaureladj/ada` au catalog Vercel Skills
+- [ ] Real run on docs.anthropic.com with your keys (runtime debug)
+- [ ] GitHub push + first NPM release via Changesets
+- [ ] Publish skill `marcaureladj/ada` on the Vercel Skills catalog
 
 ### 🚧 v1.1+
 
-- [ ] Mode interactif (validation step-by-step de chaque scène)
-- [ ] Multi-langue parallèle (N langues en un run)
-- [ ] Mode mobile (émulation devices via Playwright)
+- [ ] Interactive mode (step-by-step validation of every scene)
+- [ ] Parallel multi-language (N languages in one run)
+- [ ] Mobile mode (device emulation via Playwright)
 - [ ] Self-host Docker (Dockerfile + compose)
-- [ ] Doc hébergée (`docs.ada.dev`)
-- [ ] Landing page produit (méta-démo générée par ADA elle-même)
+- [ ] Hosted docs (`docs.ada.dev`)
+- [ ] Product landing page (meta-demo generated by ADA itself)
 - [ ] Voice cloning
 
 ---
 
 ## 🤝 Contributing
 
-Voir [`CONTRIBUTING.md`](./CONTRIBUTING.md) pour le workflow de développement (prérequis, structure du repo, tests, conventional commits, changesets).
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the development workflow (prereqs, repo layout, tests, conventional commits, changesets).
 
-Tous les contributeurs s'engagent à respecter le [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
+All contributors agree to follow the [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
-Si tu découvres une vulnérabilité — surtout sur le périmètre auth / masquage credentials — voir [`SECURITY.md`](./SECURITY.md) pour la divulgation privée via GitHub Security Advisories.
+If you discover a vulnerability — especially in the auth / credential-masking scope — see [`SECURITY.md`](./SECURITY.md) for private disclosure via GitHub Security Advisories.
 
 ---
 
-## 📜 Crédits
+## 📜 Credits
 
-- **Spec produit** — [`cdc-docuvid-v2.md`](./cdc-docuvid-v2.md) — par Marc-Aurel.
-- **Moteur vidéo** — [HyperFrames](https://github.com/heygen-com/hyperframes) (HeyGen, Apache 2.0).
-- **Concurrents et inspirations** — Arcade, Supademo, Guidde, Tango, Browser Use.
+- **Product spec** — [`cdc-docuvid-v2.md`](./cdc-docuvid-v2.md) — by Marc-Aurel.
+- **Video engine** — [HyperFrames](https://github.com/heygen-com/hyperframes) (HeyGen, Apache 2.0).
+- **Competitors and inspirations** — Arcade, Supademo, Guidde, Tango, Browser Use.
 
 ---
 
@@ -402,6 +402,6 @@ Si tu découvres une vulnérabilité — surtout sur le périmètre auth / masqu
   <img src="https://img.shields.io/badge/license-Apache_2.0-D22128?logo=apache&logoColor=white" alt="Apache 2.0" />
 </p>
 
-Apache License 2.0 — voir [`LICENSE`](./LICENSE).
+Apache License 2.0 — see [`LICENSE`](./LICENSE).
 
 Copyright © 2026 Marc-Aurel.
