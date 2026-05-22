@@ -34,9 +34,12 @@ export interface VisionProvider {
 
 export type VisionProviderFactory = (config: VisionProviderConfig) => VisionProvider;
 
+import type { EventSink } from '@ada/core';
+
 export interface VisionProviderConfig {
   apiKey?: string | undefined;
   model?: string | undefined;
   maxRetries?: number | undefined;
   betaHeader?: string | undefined;
+  eventSink?: EventSink | undefined;
 }

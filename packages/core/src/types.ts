@@ -141,6 +141,31 @@ export interface AuthReport {
   error?: string;
 }
 
+export interface StageTimings {
+  planner?: number;
+  navigator?: number;
+  scripter?: number;
+  voicer?: number;
+  composer?: number;
+}
+
+export interface SuccessRate {
+  scenes: { total: number; ok: number; failed: number };
+  actions: { total: number; ok: number; failed: number };
+}
+
+export interface RetryStatsSummary {
+  total: number;
+  byProvider: Record<string, number>;
+}
+
+export interface UsageBreakdown {
+  textInputTokens: number;
+  textOutputTokens: number;
+  visionInputTokens: number;
+  ttsCharacters: number;
+}
+
 export interface RunReport {
   status: 'success' | 'partial' | 'failed';
   startedAt: string;
@@ -160,5 +185,10 @@ export interface RunReport {
   };
   authReport?: AuthReport;
   estimatedCostUsd?: number;
+  stageTimings?: StageTimings;
+  successRate?: SuccessRate;
+  retries?: RetryStatsSummary;
+  usage?: UsageBreakdown;
+  eventLogPath?: string;
   errors: string[];
 }

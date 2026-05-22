@@ -18,8 +18,8 @@ export async function planCommand(options: PlanOptions): Promise<number> {
       ...(options.language !== undefined ? { language: options.language } : {}),
       output: './demo.mp4',
     });
-    const { planner } = buildPipelineDeps(config);
-    const plan = await planner.plan(config);
+    const { deps } = buildPipelineDeps(config);
+    const plan = await deps.planner.plan(config);
     emit(
       options.outputFormat,
       plan,

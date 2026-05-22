@@ -117,7 +117,10 @@ describe('createOpenAiTextProvider', () => {
     try {
       // Construction should NOT throw (lazy).
       const provider = createOpenAiTextProvider({});
-      await assert.rejects(() => provider.complete({ prompt: 'hi' }), /OPENAI_API_KEY manquant/);
+      await assert.rejects(
+        () => provider.complete({ prompt: 'hi' }),
+        /Clé API manquante pour openai/,
+      );
     } finally {
       if (prev !== undefined) process.env['OPENAI_API_KEY'] = prev;
     }

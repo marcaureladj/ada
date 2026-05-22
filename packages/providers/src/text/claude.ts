@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { ModuleError } from '@ada/core';
+import { ModuleError, withRetry } from '@ada/core';
 import type { z } from 'zod';
 import type { TextCompletionRequest, TextProvider, TextProviderConfig } from './index.js';
 import {
@@ -17,12 +17,42 @@ function makeClient(config: TextProviderConfig): Anthropic {
       'ANTHROPIC_API_KEY manquant. Définissez-le dans votre .env.',
     );
   }
-  return new Anthropic({ apiKey });
+  // SDK retries disabled — withRetry below owns the retry policy.
+  return new Anthropic({ apiKey, maxRetries: 0 });
 }
 
 function lazyClient(config: TextProviderConfig): () => Anthropic {
   let cached: Anthropic | undefined;
   return () => (cached ??= makeClient(config));
+}
+
+function callWithRetry<T>(
+  config: TextProviderConfig,
+  providerName: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const sink = config.eventSink;
+  return withRetry(fn, {
+    maxAttempts: config.maxRetries !== undefined ? config.maxRetries + 1 : 3,
+    onAttempt: (attempt, error, delayMs) => {
+      sink?.emit({
+        level: 'warn',
+        type: `api.${providerName}.retry`,
+        payload: {
+          attempt,
+          delayMs,
+          error: (error as Error)?.message ?? String(error),
+        },
+      });
+    },
+  }).then(({ result, stats }) => {
+    sink?.emit({
+      level: 'debug',
+      type: `api.${providerName}.call`,
+      payload: { attempts: stats.attempts, totalDelayMs: stats.totalDelayMs },
+    });
+    return result;
+  });
 }
 
 function extractText(message: Anthropic.Messages.Message): string {
@@ -40,13 +70,15 @@ export function createClaudeTextProvider(config: TextProviderConfig): TextProvid
   return {
     name: 'claude',
     async complete(request: TextCompletionRequest): Promise<string> {
-      const message = await getClient().messages.create({
-        model,
-        max_tokens: request.maxTokens ?? 4096,
-        temperature: request.temperature ?? 0.7,
-        ...(request.system !== undefined ? { system: request.system } : {}),
-        messages: [{ role: 'user', content: request.prompt }],
-      });
+      const message = await callWithRetry(config, 'anthropic', () =>
+        getClient().messages.create({
+          model,
+          max_tokens: request.maxTokens ?? 4096,
+          temperature: request.temperature ?? 0.7,
+          ...(request.system !== undefined ? { system: request.system } : {}),
+          messages: [{ role: 'user', content: request.prompt }],
+        }),
+      );
       return extractText(message);
     },
 
@@ -58,20 +90,22 @@ export function createClaudeTextProvider(config: TextProviderConfig): TextProvid
       let lastFeedback = '';
 
       while (attempt <= maxRetries) {
-        const message = await getClient().messages.create({
-          model,
-          max_tokens: request.maxTokens ?? 4096,
-          temperature: request.temperature ?? 0.3,
-          system,
-          messages: [
-            {
-              role: 'user',
-              content: lastFeedback
-                ? `${request.prompt}\n\nCORRECTION: ${lastFeedback}`
-                : request.prompt,
-            },
-          ],
-        });
+        const message = await callWithRetry(config, 'anthropic', () =>
+          getClient().messages.create({
+            model,
+            max_tokens: request.maxTokens ?? 4096,
+            temperature: request.temperature ?? 0.3,
+            system,
+            messages: [
+              {
+                role: 'user',
+                content: lastFeedback
+                  ? `${request.prompt}\n\nCORRECTION: ${lastFeedback}`
+                  : request.prompt,
+              },
+            ],
+          }),
+        );
         const raw = extractText(message);
         const result = tryParseStructured(request.schema, raw);
         if (result.ok) return result.data;

@@ -1,5 +1,10 @@
 import OpenAI from 'openai';
-import { ModuleError, mp3Duration, type Language } from '@ada/core';
+import {
+  ModuleError,
+  mp3Duration,
+  withRetry,
+  type Language,
+} from '@ada/core';
 import type { TtsProvider, TtsProviderConfig, TtsResult, TtsSynthesisRequest } from './index.js';
 
 const DEFAULT_MODEL_ENV = 'ADA_OPENAI_TTS_MODEL';
@@ -53,7 +58,32 @@ function makeClient(config: TtsProviderConfig): OpenAI {
       'OPENAI_API_KEY manquant. Définissez-le dans votre .env.',
     );
   }
-  return new OpenAI({ apiKey });
+  return new OpenAI({ apiKey, maxRetries: 0 });
+}
+
+function callWithRetry<T>(config: TtsProviderConfig, fn: () => Promise<T>): Promise<T> {
+  const sink = config.eventSink;
+  return withRetry(fn, {
+    maxAttempts: 3,
+    onAttempt: (attempt, error, delayMs) => {
+      sink?.emit({
+        level: 'warn',
+        type: 'api.openai.retry',
+        payload: {
+          attempt,
+          delayMs,
+          error: (error as Error)?.message ?? String(error),
+        },
+      });
+    },
+  }).then(({ result, stats }) => {
+    sink?.emit({
+      level: 'debug',
+      type: 'api.openai.call',
+      payload: { attempts: stats.attempts, totalDelayMs: stats.totalDelayMs },
+    });
+    return result;
+  });
 }
 
 function lazyClient(
@@ -76,12 +106,14 @@ export function createOpenAiTtsProvider(
     name: 'openai-tts',
     async synthesize(request: TtsSynthesisRequest): Promise<TtsResult> {
       const voice = resolveVoice(request.voice);
-      const response = await getClient().audio.speech.create({
-        model,
-        voice,
-        input: request.text,
-        response_format: 'mp3',
-      });
+      const response = await callWithRetry(config, () =>
+        getClient().audio.speech.create({
+          model,
+          voice,
+          input: request.text,
+          response_format: 'mp3',
+        }),
+      );
       const arrayBuffer = await response.arrayBuffer();
       const audio = Buffer.from(arrayBuffer);
       const durationSec = mp3Duration(audio);

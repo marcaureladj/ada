@@ -21,7 +21,10 @@ export interface TtsProvider {
 
 export type TtsProviderFactory = (config: TtsProviderConfig) => TtsProvider;
 
+import type { EventSink } from '@ada/core';
+
 export interface TtsProviderConfig {
   apiKey?: string | undefined;
   cacheDir?: string | undefined;
+  eventSink?: EventSink | undefined;
 }
