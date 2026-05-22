@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      anthropic:
+        patterns:
+          - "@anthropic-ai/*"
+      openai:
+        patterns:
+          - "openai"
+      playwright:
+        patterns:
+          - "playwright*"
+      types:
+        patterns:
+          - "@types/*"
+      tooling:
+        patterns:
+          - "typescript"
+          - "tsx"
+          - "oxlint"
+          - "prettier"
+          - "rimraf"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

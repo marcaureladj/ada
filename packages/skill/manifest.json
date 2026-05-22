@@ -1,0 +1,25 @@
+{
+  "$schema": "https://skills.vercel.com/schema.json",
+  "name": "marcaureladj/ada",
+  "version": "0.0.0",
+  "description": "ADA — Autonomous Documentation Agent. Génère une vidéo de démo narrée d'une web app via un agent IA + HyperFrames.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/marcaureladj/ada",
+  "entrypoint": "SKILL.md",
+  "tools": [
+    {
+      "name": "ada-cli",
+      "kind": "shell",
+      "command": "ada",
+      "args": ["--help"]
+    }
+  ],
+  "triggers": [
+    "generate a video demo",
+    "generate a product demo",
+    "record a walkthrough",
+    "génère une démo vidéo",
+    "documenter en vidéo"
+  ],
+  "tags": ["video", "documentation", "agent", "hyperframes", "playwright"]
+}

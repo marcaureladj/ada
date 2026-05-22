@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn",
+    "style": "off"
+  },
+  "rules": {
+    "unicorn/no-useless-spread": "off"
+  },
+  "ignorePatterns": ["**/dist/**", "**/node_modules/**", "**/*.tsbuildinfo"]
+}
