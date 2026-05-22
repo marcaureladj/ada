@@ -1,0 +1,43 @@
+{
+  "name": "@ada/templates",
+  "version": "0.0.0",
+  "description": "ADA HyperFrames templates : classic, framed, split, social. Génèrent du HTML conforme au schéma HyperFrames à partir d'un Script + assets.",
+  "license": "Apache-2.0",
+  "author": "Marc-Aurel",
+  "homepage": "https://github.com/marcaureladj/ada#readme",
+  "bugs": "https://github.com/marcaureladj/ada/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcaureladj/ada.git",
+    "directory": "packages/templates"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": ["ada", "hyperframes", "templates", "gsap", "video"],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@ada/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3"
+  }
+}

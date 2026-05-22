@@ -1,0 +1,50 @@
+{
+  "name": "@ada/core",
+  "version": "0.0.0",
+  "description": "ADA core — types, schémas Zod et orchestrateur du pipeline 5 étages (Planner → Navigator → Scripter → Voicer → Composer).",
+  "license": "Apache-2.0",
+  "author": "Marc-Aurel",
+  "homepage": "https://github.com/marcaureladj/ada#readme",
+  "bugs": "https://github.com/marcaureladj/ada/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcaureladj/ada.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": ["ada", "documentation", "video", "agent", "hyperframes", "playwright"],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./modules/*": {
+      "types": "./dist/modules/*.d.ts",
+      "import": "./dist/modules/*.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "execa": "^9.5.0",
+    "nanoid": "^5.0.7",
+    "playwright": "^1.48.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3"
+  }
+}

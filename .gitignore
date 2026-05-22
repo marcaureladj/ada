@@ -1,0 +1,28 @@
+node_modules/
+dist/
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / agents
+.vscode/
+.idea/
+.claude/
+
+# ADA runtime artefacts
+out/
+.ada-cache/
+*.webm
+*.mp4
+!packages/**/fixtures/**/*.mp4

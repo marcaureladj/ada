@@ -1,0 +1,12 @@
+{
+  "name": "@ada/skill",
+  "version": "0.0.0",
+  "description": "ADA agent skill — installable via `npx skills add marcaureladj/ada` pour Claude Code, Cursor, Codex, Gemini CLI.",
+  "license": "Apache-2.0",
+  "private": false,
+  "files": [
+    "SKILL.md",
+    "manifest.json",
+    "README.md"
+  ]
+}

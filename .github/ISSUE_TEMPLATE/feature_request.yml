@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest an enhancement to ADA
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Context first — what are you trying to do that ADA doesn't handle today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What you'd like ADA to do. Sketches, CLI flags, YAML examples all welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you tried, related tools, etc.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      multiple: true
+      options:
+        - Navigator (Playwright / Computer Use)
+        - Planner / Scripter
+        - Voicer / TTS
+        - Composer / HyperFrames
+        - Templates / annotations
+        - CLI / config
+        - Auth
+        - Docs / skill

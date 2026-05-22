@@ -1,0 +1,40 @@
+{
+  "name": "ada-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ADA — Autonomous Documentation Agent. Génération automatique de documentation vidéo par IA agentique, basée sur HyperFrames.",
+  "license": "Apache-2.0",
+  "author": "Marc-Aurel",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "build": "pnpm -r --filter=./packages/* build",
+    "clean": "pnpm -r --filter=./packages/* clean",
+    "lint": "oxlint --ignore-path .oxlintignore .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -b --noEmit",
+    "test": "node --import tsx --test \"packages/core/src/**/*.test.ts\" \"packages/cli/src/**/*.test.ts\" \"packages/templates/src/**/*.test.ts\" \"packages/providers/src/**/*.test.ts\"",
+    "playwright:install": "pnpm --filter @ada/core exec playwright install chromium",
+    "cli": "node packages/cli/dist/cli.js",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm -r build && changeset publish",
+    "prepare": "simple-git-hooks || true"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint && pnpm typecheck"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.9",
+    "@types/node": "^22.7.5",
+    "oxlint": "^0.11.0",
+    "prettier": "^3.3.3",
+    "simple-git-hooks": "^2.11.1",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}

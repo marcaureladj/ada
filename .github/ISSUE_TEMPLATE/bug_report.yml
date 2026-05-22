@@ -1,0 +1,71 @@
+name: Bug report
+description: Report a bug in ADA
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug, including what you expected to happen instead.
+      placeholder: |
+        I ran `ada run ...` and got ...
+        I expected ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Minimal steps to reproduce. Include the command-line and (redacted) ada.yaml if relevant.
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: report
+    attributes:
+      label: RunReport (sanitized)
+      description: Paste the JSON RunReport (`out/<run-id>/report.json`) with any credentials redacted.
+      render: json
+
+  - type: input
+    id: ada-version
+    attributes:
+      label: ADA version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Windows (WSL2)
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: "22.5.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: providers
+    attributes:
+      label: Providers in use
+      multiple: true
+      options:
+        - claude-computer-use
+        - claude (text)
+        - openai (text)
+        - elevenlabs (tts)
+        - openai-tts
+        - mock-*
