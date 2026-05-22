@@ -36,7 +36,7 @@
     "@ada/templates": "workspace:*",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
-    "pino": "^9.5.0",
+    "pino": "^10.3.1",
     "pino-pretty": "^11.3.0",
     "yaml": "^2.5.1",
     "zod": "^3.23.8"
